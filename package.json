@@ -1,0 +1,22 @@
+{
+  "name": "02-wiv",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "rollup": "^2.77.0"
+  },
+  "dependencies": {
+    "dexie": "^3.2.2",
+    "three": "^0.135.0",
+    "web-ifc-viewer": "^1.0.210"
+  }
+}

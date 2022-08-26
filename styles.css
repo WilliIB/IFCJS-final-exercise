@@ -1,0 +1,138 @@
+* {
+   margin: 0;
+   padding: 0;
+   box-sizing: border-box;
+   --background-color: rgba(0, 0, 0, 0.8);
+   --primary-color: #ffcc32;
+   --dark-color: #f58410;
+   --text-color: #ffffff;
+
+   --blur-filter: blur(10px);
+
+   --button-size: 3rem;
+   --button-margin: 0.5rem;
+}
+
+html,
+body {
+   overflow: hidden;
+   font-family: Helvetica, sans-serif;
+   font-size: 1rem;
+   color: var(--text-color);
+}
+
+::-webkit-scrollbar {
+   width: 8px;
+ }
+  ::-webkit-scrollbar-thumb {
+   background: #888;
+ }
+ ::-webkit-scrollbar-thumb:hover {
+   background: #555;
+ }
+
+.ifc-property-item {
+   display: flex;
+   flex-direction: row;
+   width: 100%;
+   padding: 0.5rem;
+   border-bottom: dashed 1px gray;
+}
+
+.ifc-property-value {
+   width: 100%;
+   text-align: right;
+}
+.selected {
+   font-weight: 600;
+   color: var(--primary-color);
+   fill: var(--primary-color);
+}
+.toolbar {
+   display: flex;
+   justify-content: center;
+   position: absolute;
+   width: 100%;
+}
+.button {
+   min-width: 3rem;
+   min-height: 3rem;
+   display: flex;
+   justify-content: center;
+   align-content: center;
+   margin: 0.4rem;
+   color: var(--text-color);
+   fill: var(--text-color);
+   background: var(--background-color);
+   backdrop-filter: var(--blur-filter);
+   border: none;
+   border-radius: 15px;
+   box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);
+   transition: all 0.3s ease 0s;
+   cursor: pointer;
+   outline: none;
+   display: flex;
+   align-items: center;
+   width: fit-content;
+}
+
+.button:hover {
+   box-shadow: 0px 15px 20px var(--primary-color);
+   color: var(--primary-color);
+   fill: var(--primary-color);
+   transform: translateY(3px);
+}
+#viewer-container {
+   position: fixed;
+   top: 0;
+   left: 0;
+   outline: none;
+   width: 100%;
+   height: 100%;
+}
+#menu-left {
+   position: absolute;
+   z-index: 2;
+   background-color: var(--background-color);
+   backdrop-filter: blur(10px) grayscale(60%);
+   width: 25vw;
+   height: 100vh;
+   padding: 0.5rem;
+   box-shadow: 2px 2px 5px rgba(128, 128, 128, 0.6);
+}
+#ifc-property-menu {
+   overflow-y: auto;
+   height: 50%;
+}
+
+/* Spatial tree */
+#ifc-tree-menu {
+   overflow-y: auto;
+   height: 50%;
+}
+li,
+ul {
+   user-select: none;
+   cursor: pointer;
+}
+ul,
+#myUL {
+   list-style-type: none;
+}
+
+.caret::before {
+   content: "\25B6";
+   color: var(--primary-color);
+   display: inline-block;
+   margin-right: 6px;
+}
+.caret-down::before {
+   transform: rotate(90deg);
+}
+.nested {
+   display: none;
+}
+.active {
+   display: block;
+   margin-left: 10px;
+}
