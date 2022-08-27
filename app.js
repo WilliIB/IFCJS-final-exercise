@@ -9,6 +9,7 @@ import {
    removeDatabase,
 } from "./components/db-load";
 import { selectMaterial } from "./components/three-utils";
+// import { getPropertySets } from "./components/get-properties";
 
 const container = document.getElementById("viewer-container");
 const ifcViewer = new IfcViewerAPI({
@@ -22,49 +23,73 @@ ifcViewer.axes.setAxes();
 
 selectMaterial(ifcViewer);
 
-let properties;
+const previousData = localStorage.getItem("modelsNames");
 
 const db = createOrOpenDatabase();
 
+let properties;
+
 const loadButton = document.getElementById("load-button");
 const input = document.getElementById("file-input");
-loadButton.onclick = () => {const previousData = localStorage.getItem("modelsNames");
+loadButton.onclick = () => {
    if (previousData) {
       removeDatabase(db);
-   } 
+   }
    input.click();
 };
 input.addEventListener("change", (event) => {
    preprocessAndSaveIfc(event, ifcViewer, db);
 });
+
 loadIfInDB(ifcViewer, db, properties);
 
-// Load IFC
-// async function loadIFC(url) {
-//    const model = await ifcViewer.IFC.loadIfcUrl(url);
+loadPropertiesFromDB();
+async function loadPropertiesFromDB() {
+   const propertiesFromDB = await db.bimProperties.get("properties");
+   const data = propertiesFromDB.file;
+   properties = JSON.parse(data);
+}
 
-//    await ifcViewer.shadowDropper.renderShadow(model.modelID);
-//    // ifcViewer.context.renderer.postProduction.active = true;
-
-//    const ifcProject = await ifcViewer.IFC.getSpatialStructure(model.modelID);
-//    createTreeMenu(ifcProject);
-// }
-
-// loadIFC("./01.ifc");
-
+// Get properties of selected item
 window.onmousemove = () => ifcViewer.IFC.selector.prePickIfcItem();
-
-//Properties
 window.ondblclick = async () => {
    const result = await ifcViewer.IFC.selector.pickIfcItem();
-   if (!result) {
-      return;
+   if (result) {
+      const foundProperties = properties[result.id];
+      getPropertySets(foundProperties);
+      console.log(foundProperties);
+   } else {
+      ifcViewer.IFC.selector.unpickIfcItems()
    }
-   const { modelID, id } = result;
-   ifcViewer.IFC;
-   const props = await ifcViewer.IFC.getProperties(modelID, id, true, false);
-   createPropertiesMenu(props);
 };
+function getPropertySets(props) {
+   const id = props.expressID;
+   const propertyValues = Object.values(properties);
+   const allPsetsRels = propertyValues.filter(
+      (item) => item.type === "IFCRELDEFINESBYPROPERTIES"
+   );
+   const relatedPsetsRels = allPsetsRels.filter((item) =>
+      item.RelatedObjects.includes(id)
+   );
+   const psets = relatedPsetsRels.map(
+      (item) => properties[item.RelatingPropertyDefinition]
+   );
+   for (let pset of psets) {
+      pset.HasProperty = pset.HasProperties.map((id) => properties[id]);
+   }
+   props.psets = psets;
+}
+// //Properties
+// window.ondblclick = async () => {
+//    const result = await ifcViewer.IFC.selector.pickIfcItem();
+//    if (!result) {
+//       return;
+//    }
+//    const { modelID, id } = result;
+//    ifcViewer.IFC;
+//    const props = await ifcViewer.IFC.getProperties(modelID, id, true, false);
+//    createPropertiesMenu(props);
+// };
 
 const propsGUI = document.getElementById("ifc-property-menu-root");
 

@@ -1,14 +1,14 @@
-// Get properties of selected item
-window.ondblclick = async () => {
-    const result = await viewer.IFC.selector.pickIfcItem(true);
-    const foundProperties = properties[result.id];
-    getPropertySets(foundProperties);
-    console.log(foundProperties);
- };
- window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
+// // Get properties of selected item
+// window.ondblclick = async () => {
+//     const result = await viewer.IFC.selector.pickIfcItem(true);
+//     const foundProperties = properties[result.id];
+//     getPropertySets(foundProperties);
+//     console.log(foundProperties);
+//  };
+//  window.onmousemove = () => viewer.IFC.selector.prePickIfcItem();
  
  // Gets the property sets
- function getPropertySets(props) {
+ export function getPropertySets(props) {
     const id = props.expressID;
     const propertyValues = Object.values(properties);
     const allPsetsRels = propertyValues.filter(

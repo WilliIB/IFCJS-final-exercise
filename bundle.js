@@ -126551,107 +126551,109 @@ class IfcViewerAPI {
 
 function createOrOpenDatabase() {
    // If the db exists, it opens; if not, dexie creates it automatically
-      const db = new Dexie$1("ModelDatabase");
+   const db = new Dexie$1("ModelDatabase");
 
-      // DB with single table "bimModels" with primary key "name" and
-      // an index on the property "id"
-      db.version(1).stores({
-         bimModels: `
+   // DB with single table "bimModels" with primary key "name" and
+   // an index on the property "id"
+   db.version(1).stores({
+      bimModels: `
            name,
            id,
            level`,
-         bimProperties: `
+      bimProperties: `
            name`,
+   });
+   return db;
+}
+
+function loadIfInDB(ifcViewer, db, properties) {
+   const previousData = localStorage.getItem("modelsNames");
+   if (previousData) {
+      loadSavedIfc(ifcViewer, db);
+   }
+}
+
+async function preprocessAndSaveIfc(event, ifcViewer, db) {
+   const previousData = localStorage.getItem("modelsNames");
+   if (previousData) {
+      removeDatabase();
+   }
+   const file = await event.target.files[0];
+   const url = URL.createObjectURL(file);
+
+   // Export to glTF and JSON
+   const exportedGltf = await ifcViewer.GLTF.exportIfcFileAsGltf({
+      ifcFileUrl: url,
+      splitByFloors: true,
+      getProperties: true,
+   });
+
+   // Store the result in the browser memory
+   const models = [];
+
+   const levels = exportedGltf.gltf.allCategories;
+   for (const levelName in levels) {
+      const level = levels[levelName];
+      const file = level.file;
+      // Serialize data for saving it
+      const data = await file.arrayBuffer();
+      models.push({
+         name: exportedGltf.id + levelName,
+         id: exportedGltf.id,
+         level: levelName,
+         file: data,
       });
-      return db;
    }
 
+   // Now, store all the models in the database
+   await db.bimModels.bulkPut(models);
 
+   // And store all the names of the models
+   const serializedNames = JSON.stringify(models.map((model) => model.name));
+   localStorage.setItem("modelsNames", serializedNames);
 
-   function loadIfInDB(ifcViewer,db,properties) {
-      const previousData = localStorage.getItem("modelsNames");
-      if (previousData) {
-         loadSavedIfc(ifcViewer,db);
-      }
-   }
+   //Store properties
+   const exportedProperties = await exportedGltf.json[0].text();
+   const properties = [{ name: "properties", file: exportedProperties }];
+   await db.bimProperties.bulkPut(properties);
 
-   async function preprocessAndSaveIfc(event,ifcViewer,db) {
-      const previousData = localStorage.getItem("modelsNames");
-      if (previousData) {
-         removeDatabase();
-      }
-      const file = await event.target.files[0];
+   location.reload();
+}
+
+async function loadSavedIfc(ifcViewer, db, properties) {
+   // Get the names of the stored models
+   const serializedNames = localStorage.getItem("modelsNames");
+   const names = JSON.parse(serializedNames);
+
+   // Get all the models from memory and load them
+   for (const name of names) {
+      const savedModel = await db.bimModels
+         .where("name")
+         .equals(name)
+         .toArray();
+
+      // Deserialize the data
+      const data = savedModel[0].file;
+      const file = new File([data], "model");
       const url = URL.createObjectURL(file);
-
-      // Export to glTF and JSON
-      const exportedGltf = await ifcViewer.GLTF.exportIfcFileAsGltf({
-         ifcFileUrl: url,
-         splitByFloors: true,
-         getProperties: true,
-      });
-
-      // Store the result in the browser memory
-      const models = [];
-
-      const levels = exportedGltf.gltf.allCategories;
-      for (const levelName in levels) {
-         const level = levels[levelName];
-         const file = level.file;
-         // Serialize data for saving it
-         const data = await file.arrayBuffer();
-         models.push({
-            name: exportedGltf.id + levelName,
-            id: exportedGltf.id,
-            level: levelName,
-            file: data,
-         });
-      }
-
-      // Now, store all the models in the database
-      await db.bimModels.bulkPut(models);
-
-      // And store all the names of the models
-      const serializedNames = JSON.stringify(models.map((model) => model.name));
-      localStorage.setItem("modelsNames", serializedNames);
-
-      //Store properties
-      const exportedProperties = await exportedGltf.json[0].text();
-      const properties = [{ name: "properties", file: exportedProperties }];
-      await db.bimProperties.bulkPut(properties);
-
-      location.reload();
+      await ifcViewer.GLTF.loadModel(url);
+      ifcViewer.context.renderer.postProduction.active = true;
    }
+}
 
-   async function loadSavedIfc(ifcViewer,db,properties) {
-      // Get the names of the stored models
-      const serializedNames = localStorage.getItem("modelsNames");
-      const names = JSON.parse(serializedNames);
+//Get the properties
+// export async function loadPropertiesFromDB(db) {
+//    const propertiesFromDB = await db.bimProperties.get("properties");
+//    const data = await propertiesFromDB.file;
+//    const properties = await JSON.parse(data)
+//    return properties;
+// }
 
-      // Get all the models from memory and load them
-      for (const name of names) {
-         const savedModel = await db.bimModels
-            .where("name")
-            .equals(name)
-            .toArray();
-
-         // Deserialize the data
-         const data = savedModel[0].file;
-         const file = new File([data], "model");
-         const url = URL.createObjectURL(file);
-         await ifcViewer.GLTF.loadModel(url);
-      }
-
-      //Get the properties
-      const propertiesFromDB = await db.bimProperties.get("properties");
-      const data = propertiesFromDB.file;
-      JSON.parse(data);
-   }
-
-   function removeDatabase(db) {
-      localStorage.removeItem("modelsNames");
-      db.delete();
-      location.reload();
-   }
+function removeDatabase(db) {
+   localStorage.removeItem("modelsNames");
+   db.delete();
+   location.reload();
+}
 
 function selectMaterial(ifcViewer) {
     const preSelectMaterial = new MeshBasicMaterial({
@@ -126670,6 +126672,8 @@ function selectMaterial(ifcViewer) {
      ifcViewer.IFC.selector.selection.material = selectMaterial;
 }
 
+// import { getPropertySets } from "./components/get-properties";
+
 const container = document.getElementById("viewer-container");
 const ifcViewer = new IfcViewerAPI({
    container,
@@ -126682,86 +126686,75 @@ ifcViewer.axes.setAxes();
 
 selectMaterial(ifcViewer);
 
+const previousData = localStorage.getItem("modelsNames");
+
 const db = createOrOpenDatabase();
+
+let properties;
 
 const loadButton = document.getElementById("load-button");
 const input = document.getElementById("file-input");
-loadButton.onclick = () => {const previousData = localStorage.getItem("modelsNames");
+loadButton.onclick = () => {
    if (previousData) {
       removeDatabase(db);
-   } 
+   }
    input.click();
 };
 input.addEventListener("change", (event) => {
    preprocessAndSaveIfc(event, ifcViewer, db);
 });
+
 loadIfInDB(ifcViewer, db);
 
-// Load IFC
-// async function loadIFC(url) {
-//    const model = await ifcViewer.IFC.loadIfcUrl(url);
+loadPropertiesFromDB();
+async function loadPropertiesFromDB() {
+   const propertiesFromDB = await db.bimProperties.get("properties");
+   const data = propertiesFromDB.file;
+   properties = JSON.parse(data);
+}
 
-//    await ifcViewer.shadowDropper.renderShadow(model.modelID);
-//    // ifcViewer.context.renderer.postProduction.active = true;
-
-//    const ifcProject = await ifcViewer.IFC.getSpatialStructure(model.modelID);
-//    createTreeMenu(ifcProject);
-// }
-
-// loadIFC("./01.ifc");
-
+// Get properties of selected item
 window.onmousemove = () => ifcViewer.IFC.selector.prePickIfcItem();
-
-//Properties
 window.ondblclick = async () => {
    const result = await ifcViewer.IFC.selector.pickIfcItem();
-   if (!result) {
-      return;
+   if (result) {
+      const foundProperties = properties[result.id];
+      getPropertySets(foundProperties);
+      console.log(foundProperties);
+   } else {
+      ifcViewer.IFC.selector.unpickIfcItems();
    }
-   const { modelID, id } = result;
-   ifcViewer.IFC;
-   const props = await ifcViewer.IFC.getProperties(modelID, id, true, false);
-   createPropertiesMenu(props);
 };
-
-const propsGUI = document.getElementById("ifc-property-menu-root");
-
-function createPropertiesMenu(properties) {
-   removeAllChildren(propsGUI);
-
-   delete properties.psets;
-   delete properties.mats;
-   delete properties.type;
-
-   for (let key in properties) {
-      createPropertyEntry(key, properties[key]);
+function getPropertySets(props) {
+   const id = props.expressID;
+   const propertyValues = Object.values(properties);
+   const allPsetsRels = propertyValues.filter(
+      (item) => item.type === "IFCRELDEFINESBYPROPERTIES"
+   );
+   const relatedPsetsRels = allPsetsRels.filter((item) =>
+      item.RelatedObjects.includes(id)
+   );
+   const psets = relatedPsetsRels.map(
+      (item) => properties[item.RelatingPropertyDefinition]
+   );
+   for (let pset of psets) {
+      pset.HasProperty = pset.HasProperties.map((id) => properties[id]);
    }
+   props.psets = psets;
 }
+// //Properties
+// window.ondblclick = async () => {
+//    const result = await ifcViewer.IFC.selector.pickIfcItem();
+//    if (!result) {
+//       return;
+//    }
+//    const { modelID, id } = result;
+//    ifcViewer.IFC;
+//    const props = await ifcViewer.IFC.getProperties(modelID, id, true, false);
+//    createPropertiesMenu(props);
+// };
 
-function createPropertyEntry(key, value) {
-   const propContainer = document.createElement("div");
-   propContainer.classList.add("ifc-property-item");
-
-   if (value === null || value === undefined) value = "undefined";
-   else if (value.value) value = value.value;
-
-   const keyElement = document.createElement("div");
-   keyElement.textContent = key;
-   propContainer.appendChild(keyElement);
-
-   const valueElement = document.createElement("div");
-   valueElement.classList.add("ifc-property-value");
-   valueElement.textContent = value;
-   propContainer.appendChild(valueElement);
-
-   propsGUI.appendChild(propContainer);
-}
-
-function removeAllChildren(element) {
-   while (element.firstChild) {
-      element.removeChild(element.firstChild);
-   }
-}
+document.getElementById("ifc-property-menu-root");
 
 //Spatial tree
 const toggler = document.getElementsByClassName("caret");
