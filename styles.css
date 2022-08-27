@@ -48,6 +48,10 @@ body {
    color: var(--primary-color);
    fill: var(--primary-color);
 }
+.hidden {
+   visibility:hidden;
+   position: absolute;
+}
 .toolbar {
    display: flex;
    justify-content: center;

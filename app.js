@@ -1,5 +1,13 @@
 import { Color } from "three";
+import { Dexie } from "dexie";
 import { IfcViewerAPI } from "web-ifc-viewer";
+import {
+   createOrOpenDatabase,
+   loadIfInDB,
+   loadSavedIfc,
+   preprocessAndSaveIfc,
+   removeDatabase,
+} from "./components/db-load";
 import { selectMaterial } from "./components/three-utils";
 
 const container = document.getElementById("viewer-container");
@@ -12,23 +20,37 @@ const ifcViewer = new IfcViewerAPI({
 ifcViewer.grid.setGrid();
 ifcViewer.axes.setAxes();
 
-selectMaterial(ifcViewer)
+selectMaterial(ifcViewer);
 
 let properties;
 
-//Load IFC
-async function loadIFC(url) {
-   const model = await ifcViewer.IFC.loadIfcUrl(url);
+const db = createOrOpenDatabase();
 
-   await ifcViewer.shadowDropper.renderShadow(model.modelID);
-   ifcViewer.context.renderer.postProduction.active = true;
+const loadButton = document.getElementById("load-button");
+const input = document.getElementById("file-input");
+loadButton.onclick = () => {const previousData = localStorage.getItem("modelsNames");
+   if (previousData) {
+      removeDatabase(db);
+   } 
+   input.click();
+};
+input.addEventListener("change", (event) => {
+   preprocessAndSaveIfc(event, ifcViewer, db);
+});
+loadIfInDB(ifcViewer, db, properties);
 
-   const ifcProject = await ifcViewer.IFC.getSpatialStructure(model.modelID);
-   createTreeMenu(ifcProject);
-}
+// Load IFC
+// async function loadIFC(url) {
+//    const model = await ifcViewer.IFC.loadIfcUrl(url);
 
-loadIFC("./01.ifc");
+//    await ifcViewer.shadowDropper.renderShadow(model.modelID);
+//    // ifcViewer.context.renderer.postProduction.active = true;
 
+//    const ifcProject = await ifcViewer.IFC.getSpatialStructure(model.modelID);
+//    createTreeMenu(ifcProject);
+// }
+
+// loadIFC("./01.ifc");
 
 window.onmousemove = () => ifcViewer.IFC.selector.prePickIfcItem();
 
@@ -39,7 +61,7 @@ window.ondblclick = async () => {
       return;
    }
    const { modelID, id } = result;
-   ifcViewer.IFC
+   ifcViewer.IFC;
    const props = await ifcViewer.IFC.getProperties(modelID, id, true, false);
    createPropertiesMenu(props);
 };
@@ -142,7 +164,7 @@ function createTitle(parent, content) {
    parent.appendChild(title);
 }
 
-const simpleChildSelected = {li: 0}
+const simpleChildSelected = { li: 0 };
 
 function createSimpleChild(parent, node) {
    const content = nodeToString(node);
@@ -155,7 +177,7 @@ function createSimpleChild(parent, node) {
       ifcViewer.IFC.selector.prepickIfcItemsByID(0, [node.expressID]);
    };
    childNode.onclick = async () => {
-      ifcViewer.IFC.selector.pickIfcItemsByID(0, [node.expressID],true,true);
+      ifcViewer.IFC.selector.pickIfcItemsByID(0, [node.expressID], true, true);
       const props = await ifcViewer.IFC.getProperties(
          0,
          node.expressID,
@@ -164,9 +186,9 @@ function createSimpleChild(parent, node) {
       );
       createPropertiesMenu(props);
       if (simpleChildSelected.li) {
-         simpleChildSelected.li.classList.remove("selected")
+         simpleChildSelected.li.classList.remove("selected");
       }
-      childNode.classList.add("selected")
-      simpleChildSelected.li = childNode
+      childNode.classList.add("selected");
+      simpleChildSelected.li = childNode;
    };
 }
