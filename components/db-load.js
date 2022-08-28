@@ -33,11 +33,13 @@ export async function preprocessAndSaveIfc(event, ifcViewer, db) {
    }
    const file = await event.target.files[0];
    const url = URL.createObjectURL(file);
+   toggleLoadingScreen();
 
    // Export to glTF and JSON
    const exportedGltf = await ifcViewer.GLTF.exportIfcFileAsGltf({
       ifcFileUrl: url,
-      splitByFloors: true,
+      //Levels disabled for the IFC tree selection to work without rewriting code
+      // splitByFloors: true,
       getProperties: true,
    });
 
@@ -74,6 +76,8 @@ export async function preprocessAndSaveIfc(event, ifcViewer, db) {
 }
 
 export async function loadSavedIfc(ifcViewer, db, properties) {
+   toggleLoadingScreen();
+
    // Get the names of the stored models
    const serializedNames = localStorage.getItem("modelsNames");
    const names = JSON.parse(serializedNames);
@@ -92,6 +96,7 @@ export async function loadSavedIfc(ifcViewer, db, properties) {
       await ifcViewer.GLTF.loadModel(url);
       ifcViewer.context.renderer.postProduction.active = true;
    }
+   toggleLoadingScreen();
 }
 
 //Get the properties
@@ -106,4 +111,10 @@ export function removeDatabase(db) {
    localStorage.removeItem("modelsNames");
    db.delete();
    location.reload();
+}
+
+// Loading screen
+function toggleLoadingScreen() {
+   const loadingScreen = document.getElementById("loading-screen");
+   loadingScreen.classList.toggle("hidden");
 }

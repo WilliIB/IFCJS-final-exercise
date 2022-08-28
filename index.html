@@ -6,18 +6,18 @@
       <meta http-equiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="stylesheet" href="styles.css" />
+      <link rel="stylesheet" media="screen and (max-width: 780px)" href="styles-mobile.css">
       <title>IFC.js</title>
    </head>
    <body>
       <div id="viewer-container"></div>
-      <div id="menu-left" class="hidden">
-         <div id="ifc-tree-menu">
+      <div id="menu-left">
+         <div id="ifc-tree-menu" class="menu hidden">
             <ul id="myUL">
                <li id="tree-root"></li>
             </ul>
          </div>
-         <hr />
-         <div id="ifc-property-menu">
+         <div id="ifc-property-menu" class="menu hidden">
             <div class="ifc-property-item">
                <div>Key</div>
                <div class="ifc-property-value">Value</div>
@@ -29,12 +29,25 @@
          <button id="load-button" class="button">
             <svg
                xmlns="http://www.w3.org/2000/svg"
-               width="20"
-               height="20"
+               width="22"
+               height="22"
                viewBox="0 0 24 24"
             >
                <path
+                  id="load-button-path"
                   d="M19.479 10.092c-.212-3.951-3.473-7.092-7.479-7.092-4.005 0-7.267 3.141-7.479 7.092-2.57.463-4.521 2.706-4.521 5.408 0 3.037 2.463 5.5 5.5 5.5h13c3.037 0 5.5-2.463 5.5-5.5 0-2.702-1.951-4.945-4.521-5.408zm-7.479-1.092l4 4h-3v4h-2v-4h-3l4-4z"
+               />
+            </svg>
+         </button>
+         <button id="tree-button" class="button">
+            <svg
+               xmlns="http://www.w3.org/2000/svg"
+               width="22"
+               height="22"
+               viewBox="0 0 24 24"
+            >
+               <path
+                  d="M22 18v-7h-9v-5h3v-6h-8v6h3v5h-9v7h-2v6h6v-6h-2v-5h7v5h-2v6h6v-6h-2v-5h7v5h-2v6h6v-6z"
                />
             </svg>
          </button>
@@ -88,7 +101,15 @@
          </button>
          <input type="file" id="file-input" class="hidden" />
       </div>
-
+      <div id="loading-screen" class="hidden">
+         <img class="logo" src="./Resources/logo-IFCjs.svg" alt="" />
+         <h5>LOADING...</h5>
+      </div>
+      <div id="settings-screen" class="hidden">
+         <h5>Made possible thanks to</h5>
+         <img class="logo" src="./Resources/logo-IFCjs.svg" alt="" />
+         <h5>IFC.js</h5>
+      </div>
       <script src="bundle.js"></script>
    </body>
 </html>

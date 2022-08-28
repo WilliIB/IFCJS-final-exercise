@@ -23,13 +23,13 @@ body {
 
 ::-webkit-scrollbar {
    width: 8px;
- }
-  ::-webkit-scrollbar-thumb {
+}
+::-webkit-scrollbar-thumb {
    background: #888;
- }
- ::-webkit-scrollbar-thumb:hover {
+}
+::-webkit-scrollbar-thumb:hover {
    background: #555;
- }
+}
 
 .ifc-property-item {
    display: flex;
@@ -49,7 +49,7 @@ body {
    fill: var(--primary-color);
 }
 .hidden {
-   visibility:hidden;
+   visibility: hidden;
    position: absolute;
 }
 .toolbar {
@@ -86,14 +86,14 @@ body {
    fill: var(--primary-color);
    transform: translateY(3px);
 }
-.button-active{
+.button-active {
    background-color: var(--primary-color);
 }
 
 .ifcjs-dimension-preview {
    width: 1rem;
    height: 1rem;
-   background-color: #FFA50F;
+   background-color: #ffa50f;
    border-radius: 1rem;
    opacity: 0.5;
 }
@@ -104,7 +104,64 @@ body {
    padding: 4px;
    border-radius: 4px;
 }
-
+.menu{
+   z-index: 2;
+   overflow-y: auto;
+   height: 100%;
+   background-color: var(--background-color);
+   backdrop-filter: blur(10px) grayscale(60%);
+   width: 25vw;
+   border-radius: 15px;
+   margin: 1vh;
+   padding: 0.5rem;
+   padding-top: 15px;
+   box-shadow: 2px 2px 5px var(--background-color);
+}
+.logo {
+   height: 100px;
+   margin: 1rem;
+   animation: animate-logo 8s ease-in-out 0s infinite;
+}
+@keyframes animate-logo {
+   25% {
+      transform: rotate(90deg);
+   }
+   50% {
+      transform: rotate(180deg);
+   }
+   75% {
+      transform: rotate(270deg);
+   }
+   100% {
+      transform: rotate(360deg);
+   }
+}
+#loading-screen{
+   position: absolute;
+   background-color: var(--background-color);
+   backdrop-filter: blur(10px) grayscale(60%);
+   height: 100vh;
+   width: 100vw;
+   z-index: 3;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-wrap: wrap;
+   font-size: 3rem;
+}
+#settings-screen{
+   position: absolute;
+   background-color: var(--background-color);
+   backdrop-filter: blur(10px) grayscale(60%);
+   height: 100vh;
+   width: 100vw;
+   z-index: 3;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-wrap: wrap;
+   font-size: 3rem;
+}
 #viewer-container {
    position: fixed;
    top: 0;
@@ -116,23 +173,11 @@ body {
 #menu-left {
    position: absolute;
    z-index: 2;
-   background-color: var(--background-color);
-   backdrop-filter: blur(10px) grayscale(60%);
-   width: 25vw;
+   display: flex;
+   flex-direction: column;
    height: 100vh;
-   padding: 0.5rem;
-   box-shadow: 2px 2px 5px var(--background-color);
-}
-#ifc-property-menu {
-   overflow-y: auto;
-   height: 50%;
 }
 
-/* Spatial tree */
-#ifc-tree-menu {
-   overflow-y: auto;
-   height: 50%;
-}
 li,
 ul {
    user-select: none;

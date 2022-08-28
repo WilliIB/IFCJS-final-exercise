@@ -1,0 +1,15 @@
+.menu{
+   margin: 1vh;
+   padding: 0.5rem;
+   padding-top: 15px;
+   box-shadow: 2px 2px 5px var(--background-color);
+
+   width: 100%;
+}
+
+#menu-left {
+   flex-direction: row;
+   height: 50vh;
+   width: 100vw;
+   bottom: 0;
+}

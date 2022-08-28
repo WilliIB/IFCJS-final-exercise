@@ -1,4 +1,4 @@
-import { Color, MeshBasicMaterial } from "three";
+import { MeshBasicMaterial } from "three";
 
 export function selectMaterial(ifcViewer) {
     const preSelectMaterial = new MeshBasicMaterial({
